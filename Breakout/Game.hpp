@@ -30,6 +30,7 @@ class Game {
     bool topHit(sf::RectangleShape rec);
     bool leftHit(sf::RectangleShape rec);
     bool rightHit(sf::RectangleShape rec);
+    bool blockCollision(sf::RectangleShape rec);
     
     
     sf::RenderWindow window;

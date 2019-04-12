@@ -34,7 +34,7 @@ Game::Game(): window(sf::VideoMode(WIDTH, HEIGHT), "Breakout") {
     
     ball.setRadius(10);
     ball.setOrigin(10, 10);
-    ball.setPosition(640/2, 480/2);
+    ball.setPosition(640/2 - 50, 480/2);
     ball.setFillColor(sf::Color::White);
     ballVelocity = {-5*stot, 5*stot};
     left = false;
@@ -144,7 +144,7 @@ struct Point {
 
 bool Game::topHit(sf::RectangleShape rec) {
 
-    if(ball.getPosition().y+10 >= rec.getPosition().y && ball.getPosition().x + 10 > rec.getPosition().x && ball.getPosition().x - 10 < rec.getPosition().x + 128) {
+    if(ball.getPosition().y+10 >= rec.getPosition().y && ball.getPosition().y - 10 <= rec.getPosition().y && ball.getPosition().x < rec.getPosition().x+128 && ball.getPosition().x > rec.getPosition().x) {
         ballVelocity.y = -5*stot;
         return true;
     }
@@ -153,7 +153,7 @@ bool Game::topHit(sf::RectangleShape rec) {
 }
 
 bool Game::bottomHit(sf::RectangleShape rec) {
-    if(ball.getPosition().y - 10 <= rec.getPosition().y+50 && ball.getPosition().x + 10 > rec.getPosition().x && ball.getPosition().x - 10 < rec.getPosition().x + 128) {
+    if(ball.getPosition().y - 10 <= rec.getPosition().y+50 &&  ball.getPosition().y + 10 >= rec.getPosition().y+50 && ball.getPosition().x < rec.getPosition().x+128 && ball.getPosition().x > rec.getPosition().x) {
         ballVelocity.y = 5*stot;
         std::cout << "bottom\n";
         return true;
@@ -163,27 +163,54 @@ bool Game::bottomHit(sf::RectangleShape rec) {
 }
 
 bool Game::leftHit(sf::RectangleShape rec) {
+    
+    if(ball.getPosition().x + 10 >= rec.getPosition().x && ball.getPosition().x <= rec.getPosition().x
+       && ball.getPosition().y - 10 >= rec.getPosition().y && ball.getPosition().y + 10 <= rec.getPosition().y + 50) {
+        ballVelocity.x = -5*stot;
+        std::cout << "left\n";
+        return true;
+    }
     return false;
 }
 
 bool Game::rightHit(sf::RectangleShape rec) {
+    if(ball.getPosition().x - 10 <= rec.getPosition().x + 128 && ball.getPosition().x + 10 >= rec.getPosition().x + 128
+       && ball.getPosition().y - 10 >= rec.getPosition().y && ball.getPosition().y + 10 <= rec.getPosition().y + 50) {
+        ballVelocity.x = 5*stot;
+        std::cout << "right\n";
+        return true;
+    }
     return false;
 }
 
+bool Game::blockCollision(sf::RectangleShape rec) {
+    bool collide = false;
+    if(topHit(rec)) {
+        collide = true;
+    } else if(leftHit(rec)) {
+        collide = true;
+    } else if(rightHit(rec)) {
+        collide = true;
+    } else if(bottomHit(rec)) {
+        collide = true;
+    }
+    
+    return collide;
+}
 void Game::collision() {
     Point ballp1 = {ball.getPosition().x -10, ball.getPosition().y -10};
     Point ballp2 = {ball.getPosition().x +10, ball.getPosition().y +10};
     
     topHit(paddle);
     
-    
-    if(ball.getPosition().y - 10 <= 200) {
+    if(rects.empty()) {
+        run = false;
+    }
+    else if(ball.getPosition().y - 10 <= 200) {
         for(int i = 0; i < rects.size(); i++) {
-            if(topHit(rects[i]) || bottomHit(rects[i]) || leftHit(rects[i]) || rightHit(rects[i])) {
-                std::cout << "Erasing element " << i << "\n";
+            if(blockCollision(rects[i])) {
                 rects.erase(rects.begin() + i);
             }
-            
         }
     }
     
